@@ -1,0 +1,38 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[portuguese]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{fullpage}
+\usepackage[usenames]{color}
+\usepackage[color]{coqdoc}
+\usepackage{url}
+\usepackage{makeidx,hyperref}
+\usepackage[all]{xy}
+\usepackage{soul,xcolor}
+
+\usepackage{mathpartir}
+\usepackage{tcolorbox}
+\usepackage{amsmath,amssymb}
+
+\newcommand{\tto}{\twoheadrightarrow}
+\newcommand{\ott}{\twoheadleftarrow}
+
+\newcommand{\flavio}[1]{{\color{red}#1}}
+\newcommand{\cflavio}[2]{\st{#1}{\color{red} #2}}
+\newcommand{\rflavio}[1]{\st{#1}}
+\newcommand{\mtulio}[1]{{\color{blue}#1}}
+
+\title{A Correção do Algoritmo de Ordenação por Inserção}
+\author{Nome 1 - matrícula 1 \\ Nome 2 - matrícula 2 \\ Nome 3 - matrícula 3}
+\date{\today}
+
+\begin{document}
+\maketitle
+\setstcolor{red}
+
+\input{insertion_sort.v}
+\bibliographystyle{alpha}
+\bibliography{referencias}
+\end{document}
