@@ -18,6 +18,11 @@ a erros humanos, ambiguidades e saltos lógicos. O uso de uma ferramenta formal 
 para mitigar esses riscos, garantindo o rigor e a correção mecânica de cada passo da demonstração.
 *)
 
+(** Observação sobre o ambiente de prova: A formalização deste projeto foi realizada utilizando 
+a plataforma online jsCoq (disponível em https://jscoq.github.io/scratchpad.html). 
+As versões específicas utilizadas foram o jsCoq 0.12.3, executando sobre o núcleo do Coq versão 8.12.2 (build 81200).*)
+
+
 
 (** * Definição dos Algoritmos *)
 
