@@ -137,7 +137,8 @@ Proof.
     - Caso Base (Lista Vazia): A inserção de [x] em uma lista vazia resulta na lista unitária [[x]], que é trivialmente ordenada.
     - Passo Indutivo: Supondo uma lista da forma [a :: tl] onde a cauda [tl] também é ordenada, temos dois cenários baseados na comparação entre [x] e a cabeça [a]:
         - Se [x <= a]: O elemento [x] torna-se a nova cabeça da lista ([x :: a :: tl]). Como [x <= a] e o restante da lista já estava ordenado, a propriedade é preservada.
-        - Se [x > a]: O algoritmo insere [x] recursivamente na cauda [tl]. Pela hipótese de indução, sabemos que essa inserção recursiva gera uma lista ordenada. Resta apenas provar que a cabeça original [a] preserva a ordem em relação à nova lista gerada, o que é garantido pois [a < x] e [a] já era menor ou igual a todos os elementos de [tl].
+        - Se [x > a]: O algoritmo insere [x] recursivamente na cauda [tl]. Pela hipótese de indução, sabemos que essa inserção 
+        recursiva gera uma lista ordenada. Resta apenas provar que a cabeça original [a] preserva a ordem em relação à nova lista gerada, o que é garantido pois [a < x] e [a] já era menor ou igual a todos os elementos de [tl].
 *)
  
 (** ** Preservação da Permutação *)
@@ -145,19 +146,63 @@ Proof.
 (** Além da ordenação, é necessário garantir que a operação de inserção não duplica nem remove elementos indevidamente. 
 O lema abaixo estabelece que a lista resultante de [insert x l] é uma permutação da lista [x :: l]. *)
 
-Lemma insert_perm : forall x l, Permutation (x :: l) (insert x l).
+Lemma insertPreservesPerm : forall x l, Permutation (x :: l) (insert x l).
 (*begin hide*)
 Proof.
-Admitted.
+  (*indução estrutural em l*)
+  induction l.
+    (*Caso base*)
+    - auto.
+    (*(Passo indutivo) dois casos diferentes: x<=a ou x>a*)
+    - destruct (x <=? a) eqn:E.
+      (*Caso x <= a*)
+      (*Simplifica insert e reescreve E. Como os termos ficam idênticos, usamos reflexividade*)
+      * simpl. rewrite E. reflexivity.
+      (*Caso x > a*)
+      (*simplifica insert (x vai para a cauda) e reescreve E*)
+      * simpl. rewrite E.
+      (*Usamos transitividade para forçar a troca (swap) entre a cabeça 'a' e 'x'*)
+      apply perm_trans with (l' := a :: x :: l). 
+      (*resolve a troca*)
+      apply perm_swap.
+      (*ignora a cabeça "a" presente nos dois lados*)
+      apply perm_skip. 
+      (*usamos nossa hipotese*)
+      apply IHl.
+Qed.
 (*end hide*)
 
 (** * Teorema Principal *)
   
 Theorem insertion_sort_correct: forall l, Sorted le (insertion_sort l) /\ Permutation (insertion_sort l) l.
+(*begin hide*)
 Proof.
+  (*inducao estrutural na lista l*)
   induction l as [|h tl IH].
-  simpl. split. apply Sorted_nil.
-  apply perm_nil.
+  (*Caso base: lista vazia*) 
+  simpl. split. apply Sorted_nil. apply perm_nil.
+  
+  (*Passo indutivo*)
+  (*Expande a definicao de insert*)
   simpl.
+  (*divide o "goal" em dois "subgoals" devido a conjução*)
   split.
+  
+  (*usamos o lema auxiliar: inserir num lista ordenada mantém a ordenação*)
   apply insertPreservesSorted.
+  (*quebrar IH em duas hipoteses*)
+  destruct IH as [H_sorted H_perm].
+  (*usamos nossa hipotese*)
+  apply H_sorted.
+  (*usamos transitividade com um passo intermediário onde 'h' está na cabeça*)
+  apply perm_trans with (l' := h :: insertion_sort tl).
+  (*para a primeira parte, invertemos para usarmos o lema auxiliar*)
+  symmetry. apply insertPreservesPerm.
+  (*ignoramos a cabeça pois são iguais e focamos na calda*)
+  apply perm_skip.
+  (*quebramos a hipotese*)
+  destruct IH as [H_sorted H_perm].
+  (*aplicamos a hipotese*)
+  apply H_perm.
+Qed.
+(*end hide*)
