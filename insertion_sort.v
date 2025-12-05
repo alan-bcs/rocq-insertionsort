@@ -160,13 +160,9 @@ Proof.
 
 (** Além da ordenação, é fundamental garantir que a operação de inserção não altere o conjunto de dados.
 
-<<<<<<< HEAD
     Lema: Para todo elemento [x] e lista [l], a lista resultante da inserção [insert x l] é uma permutação da lista original acrescida de [x] (ou seja, [x :: l]). 
     
     Demonstração: *)
-=======
-Lemma insertPreservesPerm : forall x l, Permutation (x :: l) (insert x l).
->>>>>>> 182b1b4252a2827aef43eae0fc54f8c1b6c8737f
 (*begin hide*)
 Lemma insertPreservesPerm : 
   forall x l, Permutation (x :: l) (insert x l).
@@ -215,7 +211,6 @@ Qed.
     Teorema: Para qualquer lista [l], a lista gerada por [insertion_sort l] é ordenada e é uma permutação de [l]. *)
 (*begin hide*)
 Theorem insertion_sort_correct: forall l, Sorted le (insertion_sort l) /\ Permutation (insertion_sort l) l.
-(*begin hide*)
 Proof.
   (*inducao estrutural na lista l*)
   induction l as [|h tl IH].
@@ -246,7 +241,6 @@ Proof.
   apply H_perm.
 Qed.
 (*end hide*)
-<<<<<<< HEAD
 
 (** ** Demonstração
 
@@ -259,5 +253,3 @@ lista de entrada [l]:
     - Passo Indutivo: Assumindo que a chamada recursiva para a cauda da lista já produz um resultado correto (Hipótese de Indução), dividimos o objetivo em duas partes:
         - Ordenação: Aplicamos o lema [insertPreservesSorted] sobre o resultado da chamada recursiva. Como a hipótese garante que a cauda ordenada permanece ordenada, a inserção  mantém essa propriedade.
         - Permutação: Utilizamos a transitividade e o lema [insertPreservesPerm]. Sabemos que inserir a cabeça na cauda ordenada gera uma permutação da lista original, completando a prova. *)
-=======
->>>>>>> 182b1b4252a2827aef43eae0fc54f8c1b6c8737f
