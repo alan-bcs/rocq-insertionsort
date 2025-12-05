@@ -19,16 +19,22 @@ para mitigar esses riscos, garantindo o rigor e a correção mecânica de cada p
 *)
 
 (** Observação sobre o ambiente de prova: A formalização deste projeto foi realizada utilizando 
-a plataforma online jsCoq (disponível em https://jscoq.github.io/scratchpad.html). 
+a plataforma online jsCoq (disponível em [https://jscoq.github.io/scratchpad.html]). 
 As versões específicas utilizadas foram o jsCoq 0.12.3, executando sobre o núcleo do Coq versão 8.12.2 (build 81200).*)
 
 
 
 (** * Definição dos Algoritmos *)
 
-(** O algoritmo de ordenação por inserção é composto por duas funções principais. A primeira é a função 
-auxiliar [insert], que insere um número natural em uma lista que já está ordenada, mantendo a ordenação. *)
+(** ** Função Auxiliar de Inserção
 
+A função auxiliar [insert] recebe um número natural [x] e uma lista [l] (assumida como ordenada). O algoritmo é definido por análise da estrutura da lista:
+
+- Lista Vazia: Retorna a lista unitária [[x]].
+- Lista Não-Vazia ([h :: tl]): Compara-se [x] com a cabeça [h]:
+    - Se [x <= h]: [x] é inserido na posição atual, tornando-se a nova cabeça.
+    - Se [x > h]: Mantém-se [h] na cabeça e insere-se [x] recursivamente na cauda [tl]. *)
+(*begin hide*)
 Fixpoint insert (x:nat) l :=
   match l with
   | [] => [x]
@@ -36,34 +42,43 @@ Fixpoint insert (x:nat) l :=
              then x::l
              else h::(insert x tl)
   end.
+(*end hide*)
 
-(** A função principal [insertion_sort] percorre a lista de entrada recursivamente, 
-inserindo cada elemento na cauda já ordenada. *)
+(** ** Algoritmo de Ordenação
 
+A função principal [insertion_sort] percorre a lista de entrada recursivamente para construir a lista ordenada final:
+
+- Caso Base: Para uma lista vazia, retorna-se uma lista vazia.
+- Passo Recursivo: Para uma lista composta por cabeça [h] e cauda [tl], o algoritmo primeiro ordena recursivamente a cauda [tl] e, em seguida, utiliza a função [insert] para posicionar o elemento [h] no local correto dentro da cauda já ordenada. *)
+
+(*begin hide*)
 Fixpoint insertion_sort (l: list nat) :=
   match l with
   | []  => []
   | h::tl => insert h (insertion_sort tl)
   end.
+(*end hide*)
 
 (** * Propriedades Auxiliares *)
 
 (** Para provar a correção total do algoritmo, precisamos estabelecer duas propriedades fundamentais sobre a função de inserção:
 *)
-(** 1. Ela preserva a ordenação dos elementos.
+(** - 1. Ela preserva a ordenação dos elementos.
 *)
-(** 2. Ela preserva o conjunto de elementos (é uma permutação).*)
+(** - 2. Ela preserva o conjunto de elementos (é uma permutação).*)
 
 
 (** ** Preservação da Ordenação *)
 
-(** O lema a seguir garante que, se inserirmos um elemento [x] em uma lista [l] que já está ordenada 
-([Sorted]), a lista resultante também estará ordenada. A prova é feita por indução estrutural 
-na lista [l] e análise de casos sobre a comparação entre [x] e a cabeça da lista. *)
+(** O lema a seguir garante que a operação de inserção mantém a integridade da ordem.
 
+    Lema: Para todo elemento [x] e lista [l], se [l] já está ordenada ([Sorted]), então a lista resultante de [insert x l] também estará ordenada. 
+
+    Demonstração: *)
+
+(*begin hide*)
 Lemma insertPreservesSorted :
   forall x l, Sorted le l -> Sorted le (insert x l).
-(*begin hide*)
 Proof.
   (* Introduções das implicações*)
   intros.
@@ -142,22 +157,98 @@ Proof.
  
 (** ** Preservação da Permutação *)
 
-(** Além da ordenação, é necessário garantir que a operação de inserção não duplica nem remove elementos indevidamente. 
-O lema abaixo estabelece que a lista resultante de [insert x l] é uma permutação da lista [x :: l]. *)
+(** Além da ordenação, é fundamental garantir que a operação de inserção não altere o conjunto de dados.
 
-Lemma insert_perm : forall x l, Permutation (x :: l) (insert x l).
+    Lema: Para todo elemento [x] e lista [l], a lista resultante da inserção [insert x l] é uma permutação da lista original acrescida de [x] (ou seja, [x :: l]). 
+    
+    Demonstração: *)
 (*begin hide*)
+Lemma insertPreservesPerm : 
+  forall x l, Permutation (x :: l) (insert x l).
 Proof.
-Admitted.
+  (*indução estrutural em l*)
+  induction l.
+    (*Caso base*)
+    - auto.
+    (*(Passo indutivo) dois casos diferentes: x<=a ou x>a*)
+    - destruct (x <=? a) eqn:E.
+      (*Caso x <= a*)
+      (*Simplifica insert e reescreve E. Como os termos ficam idênticos, usamos reflexividade*)
+      * simpl. rewrite E. reflexivity.
+      (*Caso x > a*)
+      (*simplifica insert (x vai para a cauda) e reescreve E*)
+      * simpl. rewrite E.
+      (*Usamos transitividade para forçar a troca (swap) entre a cabeça 'a' e 'x'*)
+      apply perm_trans with (l' := a :: x :: l). 
+      (*resolve a troca*)
+      apply perm_swap.
+      (*ignora a cabeça "a" presente nos dois lados*)
+      apply perm_skip. 
+      (*usamos nossa hipotese*)
+      apply IHl.
+Qed.
 (*end hide*)
 
+(** A demonstração é conduzida por indução estrutural na lista [l]:
+    - Caso Base: Para uma lista vazia, a inserção retorna a lista unitária [[x]]. Como a lista original adicionada de [x] também é [[x]], a permutação é trivial (reflexiva).
+    - Passo Indutivo: Considerando uma lista [a :: l'], comparamos [x] com a cabeça [a]:
+        - Se [x <= a]: O elemento é inserido na cabeça. A lista resultante é idêntica à lista de entrada com [x] prefixado.
+        - Se [x > a]: O elemento deve ser inserido recursivamente na cauda. A prova exige um passo crucial de transitividade:
+            1. Primeiro, estabelecemos que [x :: a :: l'] é uma permutação de [a :: x :: l'] (troca de posições ou "swap").
+            2. Em seguida, focamos na cauda (ignorando a cabeça [a] que é comum a ambos) e aplicamos a Hipótese de Indução, que garante que a inserção de [x] em [l'] mantém a propriedade de permutação.*)
+
+
 (** * Teorema Principal *)
-  
+
+(** A correção total de um algoritmo de ordenação é estabelecida verificando-se duas propriedades fundamentais na lista de saída:
+
+    - Ordenação: Os elementos devem estar dispostos em ordem não decrescente (propriedade verificada pelo predicado [Sorted]).
+    - Permutação: A lista resultante deve conter exatamente os mesmos elementos da lista de entrada, preservando suas multiplicidades (propriedade verificada pelo predicado [Permutation]).
+
+    Formalizamos essa especificação no teorema a seguir:
+
+    Teorema: Para qualquer lista [l], a lista gerada por [insertion_sort l] é ordenada e é uma permutação de [l]. *)
+(*begin hide*)
 Theorem insertion_sort_correct: forall l, Sorted le (insertion_sort l) /\ Permutation (insertion_sort l) l.
 Proof.
+  (*inducao estrutural na lista l*)
   induction l as [|h tl IH].
-  simpl. split. apply Sorted_nil.
-  apply perm_nil.
+  (*Caso base: lista vazia*) 
+  simpl. split. apply Sorted_nil. apply perm_nil.
+  
+  (*Passo indutivo*)
+  (*Expande a definicao de insert*)
   simpl.
+  (*divide o "goal" em dois "subgoals" devido a conjução*)
   split.
+  
+  (*usamos o lema auxiliar: inserir num lista ordenada mantém a ordenação*)
   apply insertPreservesSorted.
+  (*quebrar IH em duas hipoteses*)
+  destruct IH as [H_sorted H_perm].
+  (*usamos nossa hipotese*)
+  apply H_sorted.
+  (*usamos transitividade com um passo intermediário onde 'h' está na cabeça*)
+  apply perm_trans with (l' := h :: insertion_sort tl).
+  (*para a primeira parte, invertemos para usarmos o lema auxiliar*)
+  symmetry. apply insertPreservesPerm.
+  (*ignoramos a cabeça pois são iguais e focamos na calda*)
+  apply perm_skip.
+  (*quebramos a hipotese*)
+  destruct IH as [H_sorted H_perm].
+  (*aplicamos a hipotese*)
+  apply H_perm.
+Qed.
+(*end hide*)
+
+(** ** Demonstração
+
+A prova da correção total combina as duas propriedades verificadas nos lemas auxiliares 
+(preservação da ordenação e da permutação). A demonstração procede por indução estrutural na 
+lista de entrada [l]:
+
+    - Caso Base: A lista vazia é trivialmente ordenada e é uma permutação de si mesma.
+
+    - Passo Indutivo: Assumindo que a chamada recursiva para a cauda da lista já produz um resultado correto (Hipótese de Indução), dividimos o objetivo em duas partes:
+        - Ordenação: Aplicamos o lema [insertPreservesSorted] sobre o resultado da chamada recursiva. Como a hipótese garante que a cauda ordenada permanece ordenada, a inserção  mantém essa propriedade.
+        - Permutação: Utilizamos a transitividade e o lema [insertPreservesPerm]. Sabemos que inserir a cabeça na cauda ordenada gera uma permutação da lista original, completando a prova. *)
