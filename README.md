@@ -3,9 +3,9 @@
 Este repositório contém o projeto final da disciplina de Lógica Computacional 1 (2025/2 - UnB).
 
 **Alunos:** 
-Alan dos Santos Dias - 232007830
-Bruno Henrique Duarte - 221022239
-João Marcos Rodrigo Cardoso - 232027411
+* Alan dos Santos Dias - 232007830
+* Bruno Henrique Duarte - 221022239
+* João Marcos Rodrigo Cardoso - 232027411
 
 ## Estrutura
 
